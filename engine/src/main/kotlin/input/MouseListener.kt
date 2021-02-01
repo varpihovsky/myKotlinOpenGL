@@ -72,7 +72,7 @@ class MouseListener {
     internal fun processFunctions() {
         buttonFunctions.keys.forEach {
             if (buttons[it])
-                window?.let { it1 -> buttonFunctions[it]?.execute() }
+                window?.let { it1 -> buttonFunctions[it]?.execute(window!!.window) }
         }
 
         positionFunctions.keys.forEach {
@@ -82,7 +82,7 @@ class MouseListener {
             val yTo = it.second.second
 
             if (x in xFrom..xTo && y in yFrom..yTo)
-                positionFunctions[it]?.execute(x, y)
+                positionFunctions[it]?.execute(x, y, window!!.window)
         }
     }
 }

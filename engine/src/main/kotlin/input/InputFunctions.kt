@@ -1,19 +1,18 @@
 package input
 
 import org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose
+import org.lwjgl.glfw.GLFW.glfwSetWindowTitle
 
 @FunctionalInterface
 interface InputFunction {
-    fun execute(window: Long? = null)
+    fun execute(window: Long)
 }
 
 @FunctionalInterface
 interface MouseFunction {
-    fun execute(x: Double? = null, y: Double? = null)
+    fun execute(x: Double, y: Double, window: Long)
 }
 
-class CloseWindow : InputFunction {
-    override fun execute(window: Long?) {
-        glfwSetWindowShouldClose(window!!, true)
-    }
-}
+fun closeWindow(window: Long) = glfwSetWindowShouldClose(window, true)
+
+fun setWindowTitle(window: Long, title: String) = glfwSetWindowTitle(window, title)
