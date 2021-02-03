@@ -10,7 +10,7 @@ class MouseListener {
 
     private val buttons: Array<Boolean> = Array(GLFW_MOUSE_BUTTON_LAST) { false }
     private val buttonFunctions: HashMap<Int, InputFunction> = HashMap()
-    private val positionFunctions: HashMap<Pair<Pair<Double, Double>, Pair<Double, Double>>, MouseFunction> =
+    private val positionFunctions: HashMap<Pair<Pair<Float, Float>, Pair<Float, Float>>, MouseFunction> =
         HashMap()
 
     private val mouseCallback: GLFWMouseButtonCallback =
@@ -40,8 +40,8 @@ class MouseListener {
     }
 
     fun addMousePositionFunction(
-        x: Pair<Double, Double>,
-        y: Pair<Double, Double>,
+        x: Pair<Float, Float>,
+        y: Pair<Float, Float>,
         positionFunction: MouseFunction
     ) {
         checkAssign()
@@ -49,17 +49,25 @@ class MouseListener {
         var newX = x
         var newY = y
 
-        if (newX.first < 0)
-            newX = Pair(.0, newX.second)
+        newX = if (newX.first < 0)
+            Pair(0F, newX.second)
+        else
+            Pair(window!!.width * newX.first, newX.second)
 
-        if (newX.second > window!!.width)
-            newX = Pair(newX.first, window!!.width.toDouble())
+        newX = if (newX.second > 1)
+            Pair(newX.first, window!!.width.toFloat())
+        else
+            Pair(newX.first, window!!.width * newX.second)
 
-        if (newY.first < 0)
-            newY = Pair(.0, newY.second)
+        newY = if (newY.first < 0)
+            Pair(0F, newY.second)
+        else
+            Pair(window!!.height * newY.first, newY.second)
 
-        if (newY.second > window!!.height)
-            newY = Pair(newY.first, window!!.height.toDouble())
+        newY = if (newY.second > 1)
+            Pair(newY.first, window!!.height.toFloat())
+        else
+            Pair(newY.first, window!!.height * newY.second)
 
         positionFunctions.put(Pair(newX, newY), positionFunction)
     }
@@ -85,4 +93,6 @@ class MouseListener {
                 positionFunctions[it]?.execute(x, y, window!!.window)
         }
     }
+
+    internal fun getPositionFunctions() = positionFunctions
 }

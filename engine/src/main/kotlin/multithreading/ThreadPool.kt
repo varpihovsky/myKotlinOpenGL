@@ -1,6 +1,6 @@
 package multithreading
 
-object ThreadPool {
+internal object ThreadPool {
     var checkTime = 8000L
 
     private val pool: MutableList<Thread> = mutableListOf()

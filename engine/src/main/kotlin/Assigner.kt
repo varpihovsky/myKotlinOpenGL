@@ -1,8 +1,8 @@
-package input
-
 import graphics.Window
+import input.KeyboardListener
+import input.MouseListener
 
-object InputAssigner {
+object Assigner {
     @Synchronized
     fun assign(window: Window, keyboardListener: KeyboardListener) {
         window.keyboardListener = keyboardListener

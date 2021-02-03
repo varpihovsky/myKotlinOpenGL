@@ -3,11 +3,11 @@ package input
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWKeyCallback
 
-class KeyboardListener {
+class KeyboardListener(var keyboardListener: KeyboardListener? = null) {
     private var window: Long? = null
 
     private val keys: Array<Boolean> = Array(GLFW_KEY_LAST) { false }
-    private val keyFunctions: HashMap<Int, InputFunction> = HashMap()
+    private var keyFunctions: HashMap<Int, InputFunction> = HashMap()
 
     private val keyboardCallback: GLFWKeyCallback =
         GLFWKeyCallback.create { window: Long, key: Int, scancode: Int, action: Int, mods: Int ->
@@ -28,8 +28,10 @@ class KeyboardListener {
 
     internal fun processFunctions() {
         keyFunctions.keys.forEach {
-            if (keys[it])
+            if (keys[it]) {
                 window?.let { it1 -> keyFunctions[it]?.execute(it1) }
+                keys[it] = false
+            }
         }
     }
 }

@@ -1,27 +1,36 @@
 package graphics
 
 import debug.Debug
+import graphics.objects.Mesh
+import graphics.objects.RGBAContainer
+import graphics.renderer.Renderer
 import input.KeyboardListener
 import input.MouseListener
 import multithreading.ThreadPool
 import org.lwjgl.glfw.GLFW.*
-import org.lwjgl.opengl.GL11
-import org.lwjgl.opengl.GL11.glClear
-import org.lwjgl.opengl.GL11.glClearColor
+import org.lwjgl.opengl.GL11.*
 import org.lwjgl.system.MemoryUtil.NULL
 
-class Window(val width: Int, val height: Int, val title: String) {
+class Window(internal var width: Int, internal var height: Int, var title: String) {
+    var mesh: Mesh? = null
     var changeableTitle = title
         private set
-
     var isDependentThread = true
+    var fullscreen = false
+        set(value) {
+            field = value
+            glfwSetWindowMonitor(window, if (value) glfwGetPrimaryMonitor() else NULL, 0, 0, width, height, 0)
+        }
     var background = RGBAContainer(0F, 0F, 0F, 0F)
+    var renderer = Renderer()
 
-    internal val window: Long
+    internal var window: Long
+    internal var resized = false
     internal lateinit var keyboardListener: KeyboardListener
     internal lateinit var mouseListener: MouseListener
 
     private var time: Long = 0
+    private var resizeEvent = ResizeEvent(this)
 
     init {
         if (!glfwInit()) throw RuntimeException("Cant init GLFW")
@@ -33,17 +42,17 @@ class Window(val width: Int, val height: Int, val title: String) {
         val videoMode = glfwGetVideoMode(glfwGetPrimaryMonitor())!!
         glfwSetWindowPos(window, (videoMode.width() - width) / 2, (videoMode.height() - height) / 2)
 
-        glfwSwapInterval(1)
-
-        initEmptyListeners()
+        initStandardListeners()
     }
 
-    private fun initEmptyListeners() {
+    private fun initStandardListeners() {
         keyboardListener = KeyboardListener()
         keyboardListener.init(window)
 
         mouseListener = MouseListener()
         mouseListener.init(this)
+
+        resizeEvent.init()
     }
 
     fun show() {
@@ -54,14 +63,19 @@ class Window(val width: Int, val height: Int, val title: String) {
             checkIfInterrupted()
 
             try {
-                Context.initContext(window)
+                Context.initContext(this)
             } catch (e: InterruptedException) {
                 break
             }
 
             updateBackground()
-            Context.freeContext()
+
+            renderer.renderMesh(mesh!!)
+
             glfwSwapBuffers(window)
+
+            Context.freeContext()
+
 
             glfwPollEvents()
             showDebugInfo()
@@ -83,8 +97,12 @@ class Window(val width: Int, val height: Int, val title: String) {
     }
 
     private fun updateBackground() {
+        if (resized) {
+            glViewport(0, 0, width, height)
+            resized = false
+        }
         glClearColor(background.red, background.green, background.blue, background.alfa)
-        glClear(GL11.GL_COLOR_BUFFER_BIT)
+        glClear(GL_COLOR_BUFFER_BIT)
     }
 
     private fun destructor() {

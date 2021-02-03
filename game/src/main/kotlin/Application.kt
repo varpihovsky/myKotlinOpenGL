@@ -1,7 +1,11 @@
-import graphics.RGBAContainer
 import graphics.Window
-import input.*
-import org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE
+import graphics.objects.Mesh
+import graphics.objects.Vertex
+import input.InputFunction
+import input.KeyboardListener
+import input.MouseListener
+import input.closeWindow
+import org.lwjgl.glfw.GLFW.*
 
 class Application {
     private val window = Window(
@@ -11,18 +15,24 @@ class Application {
     )
 
     init {
-        window.background = RGBAContainer(
-            red = 1.0f,
-            green = 0.5f,
-            blue = 1.0f,
-            alfa = 1.0f
+        window.mesh = Mesh(
+            arrayOf(
+                Vertex(-0.5f, 0.5f, 0.0f),
+                Vertex(0.5f, 0.5f, 0.0f),
+                Vertex(0.5f, -0.5f, 0.0f),
+                Vertex(-0.5f, -0.5f, 0.0f),
+            ),
+            arrayOf(
+                0, 1, 2,
+                0, 3, 2
+            )
         )
 
         val keyboardListener = KeyboardListener()
         val mouseListener = MouseListener()
 
-        InputAssigner.assign(window, keyboardListener)
-        InputAssigner.assign(window, mouseListener)
+        Assigner.assign(window, keyboardListener)
+        Assigner.assign(window, mouseListener)
 
         keyboardListener.addKeyboardFunction(
             GLFW_KEY_ESCAPE,
@@ -33,16 +43,43 @@ class Application {
             }
         )
 
-        mouseListener.addMousePositionFunction(
-            x = Pair(.0, WIDTH.toDouble()),
-            y = Pair(.0, HEIGHT.toDouble()),
-            object : MouseFunction {
-                override fun execute(x: Double, y: Double, wnd: Long) {
-                    setWindowTitle(wnd, window.changeableTitle + " x: $x, y: $y")
-
-                    window.background.red = (x / 2000).toFloat()
-                    window.background.green = (y / 2000).toFloat()
-                    window.background.blue = (x / 2000 + y / 2000).toFloat()
+        keyboardListener.addKeyboardFunction(
+            GLFW_KEY_W,
+            object : InputFunction {
+                override fun execute(wnd: Long) {
+                    window.mesh!!.vertices.forEachIndexed { index, vertex ->
+                        window.mesh!!.vertices[index].y += 0.05F
+                    }
+                }
+            }
+        )
+        keyboardListener.addKeyboardFunction(
+            GLFW_KEY_S,
+            object : InputFunction {
+                override fun execute(wnd: Long) {
+                    window.mesh!!.vertices.forEachIndexed { i: Int, vertex: Vertex ->
+                        window.mesh!!.vertices[i].y -= 0.05F
+                    }
+                }
+            }
+        )
+        keyboardListener.addKeyboardFunction(
+            GLFW_KEY_A,
+            object : InputFunction {
+                override fun execute(wnd: Long) {
+                    window.mesh!!.vertices.forEachIndexed { i: Int, vertex: Vertex ->
+                        window.mesh!!.vertices[i].x -= 0.05F
+                    }
+                }
+            }
+        )
+        keyboardListener.addKeyboardFunction(
+            GLFW_KEY_D,
+            object : InputFunction {
+                override fun execute(wnd: Long) {
+                    window.mesh!!.vertices.forEachIndexed { i: Int, vertex: Vertex ->
+                        window.mesh!!.vertices[i].x += 0.05F
+                    }
                 }
             }
         )
